@@ -67,12 +67,12 @@ const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 
   return geometry
 }
 
-function generateRandomColor(): THREE.Color {
+function generateRandomColor(seed: number): THREE.Color {
   const color = new THREE.Color()
   color.setHSL(
-    THREE.MathUtils.seededRandom(),        // hue: fully random
-    0.85 + THREE.MathUtils.seededRandom() * 0.15, // saturation: 0.85–1.0, always vivid
-    0.25 + THREE.MathUtils.seededRandom() * 0.15  // lightness: 0.25–0.4, deep but not black
+    THREE.MathUtils.seededRandom(seed),
+    0.85 + THREE.MathUtils.seededRandom() * 0.15,
+    0.25 + THREE.MathUtils.seededRandom() * 0.15
   )
   return color
 }
