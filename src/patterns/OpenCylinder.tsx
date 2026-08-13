@@ -2,6 +2,9 @@ import { useMemo } from "react"
 import { useControls } from 'leva'
 import * as THREE from 'three'
 
+import fragShader from '../Shaders/OpenCylinder/frag.glsl?raw'
+import vertShader from '../Shaders/OpenCylinder/vert.glsl?raw'
+
 function intersectLines(p1: THREE.Vector2, d1: THREE.Vector2, p2: THREE.Vector2, d2: THREE.Vector2): THREE.Vector2 {
   const denom = d1.x * d2.y - d1.y * d2.x; // 0 if the lines are parallel
   const diff = new THREE.Vector2().subVectors(p2, p1);
@@ -93,7 +96,10 @@ const OpenCylinder = () => {
       <group rotation={[3.14, 0.0, 0.0]}>
         {lGeometries.map((geo, i) => (
           <mesh key={i} geometry={geo}>
-            <meshNormalMaterial side={THREE.DoubleSide} />
+            <shaderMaterial
+              vertexShader={vertShader}
+              fragmentShader={fragShader}
+            />
           </mesh>
         ))}
       </group>
