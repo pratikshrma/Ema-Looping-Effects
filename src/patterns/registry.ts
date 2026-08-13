@@ -5,6 +5,7 @@ import LogSpiralZoom from './LogSpiralZoom'
 import BentSpine from './BentSpine'
 import TwistBreathing from './TwistBreathing'
 import TravellingWave from './TravellingWave'
+import OpenCylinder from './OpenCylinder'
 
 export type PatternEntry = {
   id: string
@@ -13,6 +14,7 @@ export type PatternEntry = {
 }
 
 export const patterns: PatternEntry[] = [
+  { id: 'openCylinder', Component: OpenCylinder, defaultCamera: [0, 0, 14] },
   { id: 'phyllotaxis', Component: Phyllotaxis, defaultCamera: [0, 9, 16] },
   { id: 'travellingPulse', Component: TravellingPulse, defaultCamera: [0, 4, 14] },
   { id: 'logSpiralZoom', Component: LogSpiralZoom, defaultCamera: [0, 0, 9] },
