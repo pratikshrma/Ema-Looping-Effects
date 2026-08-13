@@ -1,6 +1,7 @@
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
 import { useControls } from 'leva'
 import * as THREE from 'three'
+import { useThree, useFrame } from '@react-three/fiber'
 
 import fragShader from '../Shaders/OpenCylinder/frag.glsl?raw'
 import vertShader from '../Shaders/OpenCylinder/vert.glsl?raw'
@@ -12,8 +13,7 @@ function intersectLines(p1: THREE.Vector2, d1: THREE.Vector2, p2: THREE.Vector2,
   return p1.clone().addScaledVector(d1, s);
 }
 
-const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 90, height: number = 0.3): THREE.ExtrudeGeometry => {
-  <></>
+const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 90, height: number = 0.3, endScaleA: number = 1, endScaleB: number = 1): THREE.ExtrudeGeometry => {
   const theta = THREE.MathUtils.degToRad(angle)
 
   const d1 = new THREE.Vector2(1, 0)
@@ -40,28 +40,82 @@ const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 
 
   const shape = new THREE.Shape(points)
   const geometry = new THREE.ExtrudeGeometry(shape, { depth: height, bevelEnabled: false })
-  geometry.computeVertexNormals()
+  const posAttr = geometry.attributes.position as THREE.BufferAttribute
+  const midZ = height / 2
 
+  for (let i = 0; i < posAttr.count; i++) {
+    const x = posAttr.getX(i)
+    const y = posAttr.getY(i)
+
+    // how far along each arm this vertex is
+    const s1 = x * d1.x + y * d1.y
+    const s2 = x * d2.x + y * d2.y
+
+    // pick the arm it actually belongs to
+    const onArmA = s1 >= s2
+    const along = onArmA ? s1 : s2
+    const endScale = onArmA ? endScaleA : endScaleB
+
+    const t = THREE.MathUtils.clamp(along / length, 0, 1)
+    const s = THREE.MathUtils.lerp(1, endScale, t)
+
+    posAttr.setZ(i, (posAttr.getZ(i) - midZ) * s + midZ)
+  }
+  posAttr.needsUpdate = true
+
+  geometry.computeVertexNormals()
   return geometry
+}
+
+function generateRandomColor(): THREE.Color {
+  const color = new THREE.Color()
+  color.setHSL(
+    THREE.MathUtils.seededRandom(),        // hue: fully random
+    0.85 + THREE.MathUtils.seededRandom() * 0.15, // saturation: 0.85–1.0, always vivid
+    0.25 + THREE.MathUtils.seededRandom() * 0.15  // lightness: 0.25–0.4, deep but not black
+  )
+  return color
+}
+
+function getComplementaryColor(color: THREE.Color): THREE.Color {
+  const hsl = { h: 0, s: 0, l: 0 }
+  color.getHSL(hsl)
+  const complementary = new THREE.Color()
+  complementary.setHSL((hsl.h + 0.5) % 1.0, hsl.s, hsl.l) // +0.5 = +180° in normalized hue
+  return complementary
 }
 
 
 const OpenCylinder = () => {
-  const { length, thickness, angle, height, radius, segments } = useControls('openCylinder', {
-    length: { value: 2, min: 0.1, max: 10, step: 0.01 },
-    thickness: { value: 0.05, min: 0.001, max: 2, step: 0.001 },
+  const { size } = useThree()
+  const groupRef = useRef<THREE.Group>(null)
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.15
+    }
+  })
+
+  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB } = useControls('openCylinder', {
+    length: { value: 42.3, min: 0.1, max: 100, step: 0.01 },
+    thickness: { value: 0.15, min: 0.001, max: 2, step: 0.001 },
     angle: { value: 90, min: 1, max: 179, step: 1 },
     height: { value: 0.5, min: 0.01, max: 5, step: 0.01 },
-    radius: { value: 4, min: 0.1, max: 20, step: 0.1 },
+    radius: { value: 2.7, min: 0.1, max: 20, step: 0.1 },
     segments: { value: 32, min: 3, max: 128, step: 1 },
+    endScaleA: { value: 17.4, min: 0.1, max: 50, step: 0.01 },
+    endScaleB: { value: 1.0, min: 0.1, max: 50, step: 0.01 },
+
   })
+
 
   const lGeometries = useMemo(() => {
     const lGeometries: THREE.ExtrudeGeometry[] = []
-    const defaultLGeo = curveMesh(length, thickness, angle, height)
+    const defaultLGeo = curveMesh(length, thickness, angle, height, endScaleA, endScaleB)
 
     const circleGeo = new THREE.CircleGeometry(1, segments)
     circleGeo.rotateX(1.57)
+
     circleGeo.scale(radius, radius, radius)
 
     const positionsAttr = circleGeo.attributes.position as THREE.BufferAttribute
@@ -69,7 +123,9 @@ const OpenCylinder = () => {
 
     const defaultDir = new THREE.Vector3(1, 0, 0)
 
-    for (let i = 0; i < positions.length; i += 3) {
+    // start at 3 (not 0) to skip CircleGeometry's center vertex, which would
+    // otherwise place a piece at the origin
+    for (let i = 3; i < positions.length; i += 3) {
       const tempGeo = defaultLGeo.clone() as THREE.ExtrudeGeometry
       const x = positions[i]
       const y = positions[i + 1]
@@ -87,18 +143,33 @@ const OpenCylinder = () => {
     console.log(lGeometries)
     return lGeometries
     // return circleGeo
-  }, [length, thickness, angle, height, radius, segments])
+  }, [length, thickness, angle, height, radius, segments, endScaleA, endScaleB])
 
+  const uniformsArray = useMemo(() => {
+    return lGeometries.map((_, i) => {
+      const randomColor = generateRandomColor(i)
+      const primaryColor = getComplementaryColor(randomColor)
+      return {
+        uResolution: { value: new THREE.Vector2(size.width, size.height) },
+        uSeed: { value: THREE.MathUtils.seededRandom(i) },
+        uColor1: { value: randomColor },
+        uColor2: { value: primaryColor },
 
+      }
+    }
+    )
+  }, [lGeometries, size.width, size.height])
 
   return (
     <>
-      <group rotation={[3.14, 0.0, 0.0]}>
+      <group ref={groupRef} rotation={[3.14, 0.0, 0.0]}>
         {lGeometries.map((geo, i) => (
           <mesh key={i} geometry={geo}>
             <shaderMaterial
               vertexShader={vertShader}
               fragmentShader={fragShader}
+              uniforms={uniformsArray[i]}
+              side={THREE.BackSide}
             />
           </mesh>
         ))}

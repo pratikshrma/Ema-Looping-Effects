@@ -59,7 +59,7 @@ const Experience = () => {
       <Canvas
         gl={{ antialias: false }}
         dpr={1}
-        camera={{ position: entry.defaultCamera, fov: 45 }}
+        camera={{ position: entry.defaultCamera, fov: 15 }}
       >
         <color attach="background" args={[ui.background]} />
         <OrbitControls makeDefault />
