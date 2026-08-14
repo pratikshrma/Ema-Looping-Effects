@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MathUtils, Object3D } from 'three'
 import type { InstancedMesh } from 'three'
-import { TAU, advanceLoop } from '../lib/loop'
+import { TAU, useTime } from '../lib/loop'
 
 const MAX_FINS = 1200
 const dummy = new Object3D()
@@ -20,14 +20,16 @@ export default function BentSpine() {
     finWidth: { value: 0.02, min: 0.005, max: 8, step: 0.005 },
     finHeight: { value: 0.66, min: 0.02, max: 8, step: 0.01 },
     finDepth: { value: 0.02, min: 0.001, max: 0.5, step: 0.001 },
-    loopSeconds: { value: 3.65, min: 0.15, max: 30, step: 0.05 },
+    speed: { value: 3.0, min: 0, max: 10, step: 0.001 },
   })
+
+  const advance = useTime()
 
   useFrame((_state, delta) => {
     const m = mesh.current
     if (!m) return
 
-    const t = advanceLoop(delta, p.loopSeconds)
+    const t = advance(delta, p.speed)
     const twist = MathUtils.degToRad(p.twist)
     const lobes = Math.floor(p.lobes)
     const count = Math.min(Math.floor(p.count), MAX_FINS)
@@ -36,7 +38,7 @@ export default function BentSpine() {
     dummy.rotation.order = 'YXZ'
 
     for (let i = 0; i < count; i++) {
-      const e = i + t
+      const e = (i + t) % count
       const u = e / count
       const theta = TAU * u
 

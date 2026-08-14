@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MathUtils, Object3D } from 'three'
 import type { InstancedMesh } from 'three'
-import { TAU, advanceLoop } from '../lib/loop'
+import { TAU, useTime } from '../lib/loop'
 
 const MAX_FINS = 1200
 const dummy = new Object3D()
@@ -20,14 +20,16 @@ export default function TwistBreathing() {
     finWidth: { value: 1.02, min: 0.02, max: 12, step: 0.01 },
     finHeight: { value: 0.81, min: 0.02, max: 12, step: 0.01 },
     finDepth: { value: 0.001, min: 0.001, max: 0.5, step: 0.001 },
-    loopSeconds: { value: 14, min: 0.15, max: 30, step: 0.05 },
+    speed: { value: 0.033, min: 0, max: 2, step: 0.001 },
   })
+
+  const advance = useTime()
 
   useFrame((_state, delta) => {
     const m = mesh.current
     if (!m) return
 
-    const t = advanceLoop(delta, p.loopSeconds)
+    const t = advance(delta, p.speed)
     const twist = MathUtils.degToRad(p.twist + p.amplitude * Math.sin(TAU * t))
     const count = Math.min(Math.floor(p.count), MAX_FINS)
     m.count = count

@@ -9,6 +9,7 @@ export type DitherParams = {
   matrixSize: number
   mono: boolean
   contrast: number
+  brightness: number
 }
 
 export class DitherEffect extends Effect {
@@ -22,6 +23,7 @@ export class DitherEffect extends Effect {
         ['uMatrixSize', new Uniform(4)],
         ['uMono', new Uniform(0)],
         ['uContrast', new Uniform(1)],
+        ['uBrightness', new Uniform(0)],
         ['uEnabled', new Uniform(1)],
       ]),
     })
@@ -37,12 +39,13 @@ export class DitherEffect extends Effect {
     ;(this.uniform('uResolution').value as Vector2).set(width, height)
   }
 
-  setParams({ enabled, pixelScale, levels, matrixSize, mono, contrast }: DitherParams) {
+  setParams({ enabled, pixelScale, levels, matrixSize, mono, contrast, brightness }: DitherParams) {
     this.uniform('uPixelScale').value = Math.max(pixelScale, 1)
     this.uniform('uLevels').value = levels
     this.uniform('uMatrixSize').value = matrixSize
     this.uniform('uMono').value = mono ? 1 : 0
     this.uniform('uContrast').value = contrast
+    this.uniform('uBrightness').value = brightness
     this.uniform('uEnabled').value = enabled ? 1 : 0
   }
 }

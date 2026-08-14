@@ -48,20 +48,21 @@ float cnoise(vec2 P) {
     return 2.3 * n_xy;
 }
 
-varying vec2 vUv;
-
 uniform vec2 uResolution;
 uniform float uSeed;
 uniform vec3 uColor1;
 uniform vec3 uColor2;
+uniform float uTime;
+uniform vec2 uUvOffset;
+uniform float uFrequency;
 
 
 
 void main() {
   vec2 uv=gl_FragCoord.xy/uResolution.xy;
 
-  // vec4 color = vec4(1.0, 0., 0., 1.0);
-  float noise=cnoise(uv*5.0 *uSeed);
+  float freq=uFrequency*(0.5+uSeed);
+  float noise=cnoise(uv*freq + uUvOffset);
   noise=noise*0.5+0.5;
 
   noise=smoothstep(0.3,0.8,noise);

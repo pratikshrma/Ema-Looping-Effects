@@ -12,6 +12,7 @@ export function Dither() {
     matrixSize: { value: 4, options: { '4x4': 4, '8x8': 8 } },
     mono: { value: true },
     contrast: { value: 1.8, min: 0, max: 4, step: 0.01 },
+    brightness: { value: 0, min: -1, max: 1, step: 0.01 },
   })
 
   useEffect(() => {
@@ -22,6 +23,7 @@ export function Dither() {
       matrixSize: params.matrixSize,
       mono: params.mono,
       contrast: params.contrast,
+      brightness: params.brightness,
     })
   }, [effect, params])
 

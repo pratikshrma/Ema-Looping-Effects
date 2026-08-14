@@ -4,6 +4,7 @@ uniform float uLevels;
 uniform float uMatrixSize;
 uniform float uMono;
 uniform float uContrast;
+uniform float uBrightness;
 uniform float uEnabled;
 
 // Must stay a pure function of screen position. Random or time-varying noise
@@ -25,7 +26,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   vec2 snapped = (cell + 0.5) * uPixelScale / uResolution;
   vec3 c = texture2D(inputBuffer, snapped).rgb;
 
-  c = clamp((c - 0.5) * uContrast + 0.5, 0.0, 1.0);
+  c = clamp((c - 0.5) * uContrast + 0.5 + uBrightness, 0.0, 1.0);
 
   float b2 = bayer2(cell);
   float b4 = bayer2(cell * 0.5) * 0.25 + b2;

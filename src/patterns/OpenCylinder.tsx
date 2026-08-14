@@ -5,6 +5,10 @@ import { useThree, useFrame } from '@react-three/fiber'
 
 import fragShader from '../Shaders/OpenCylinder/frag.glsl?raw'
 import vertShader from '../Shaders/OpenCylinder/vert.glsl?raw'
+import { TAU, useTime } from "../lib/loop"
+
+const TURNS = 1
+const SHADER_KEY = vertShader + fragShader
 
 function intersectLines(p1: THREE.Vector2, d1: THREE.Vector2, p2: THREE.Vector2, d2: THREE.Vector2): THREE.Vector2 {
   const denom = d1.x * d2.y - d1.y * d2.x; // 0 if the lines are parallel
@@ -90,13 +94,8 @@ const OpenCylinder = () => {
   const { size } = useThree()
   const groupRef = useRef<THREE.Group>(null)
 
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.15
-    }
-  })
 
-  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB } = useControls('openCylinder', {
+  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY } = useControls('openCylinder', {
     length: { value: 42.3, min: 0.1, max: 100, step: 0.01 },
     thickness: { value: 0.15, min: 0.001, max: 2, step: 0.001 },
     angle: { value: 90, min: 1, max: 179, step: 1 },
@@ -105,9 +104,13 @@ const OpenCylinder = () => {
     segments: { value: 32, min: 3, max: 128, step: 1 },
     endScaleA: { value: 17.4, min: 0.1, max: 50, step: 0.01 },
     endScaleB: { value: 1.0, min: 0.1, max: 50, step: 0.01 },
-
+    speed: { value: 0.071, min: 0, max: 2, step: 0.001 },
+    frequency: { value: 5.0, min: 0.5, max: 30, step: 0.1 },
+    velocityX: { value: 0.1, min: -10, max: 10, step: 0.01 },
+    velocityY: { value: 0.06, min: -10, max: 10, step: 0.01 },
   })
 
+  const uUvOffset = useMemo(() => ({ value: new THREE.Vector2() }), [])
 
   const lGeometries = useMemo(() => {
     const lGeometries: THREE.ExtrudeGeometry[] = []
@@ -123,8 +126,6 @@ const OpenCylinder = () => {
 
     const defaultDir = new THREE.Vector3(1, 0, 0)
 
-    // start at 3 (not 0) to skip CircleGeometry's center vertex, which would
-    // otherwise place a piece at the origin
     for (let i = 3; i < positions.length; i += 3) {
       const tempGeo = defaultLGeo.clone() as THREE.ExtrudeGeometry
       const x = positions[i]
@@ -140,7 +141,6 @@ const OpenCylinder = () => {
       tempGeo.translate(pos.x, pos.y, pos.z)
       lGeometries.push(tempGeo)
     }
-    console.log(lGeometries)
     return lGeometries
     // return circleGeo
   }, [length, thickness, angle, height, radius, segments, endScaleA, endScaleB])
@@ -154,11 +154,32 @@ const OpenCylinder = () => {
         uSeed: { value: THREE.MathUtils.seededRandom(i) },
         uColor1: { value: randomColor },
         uColor2: { value: primaryColor },
-
+        uTime: { value: 0.0 },
+        uUvOffset,
+        uFrequency: { value: 1.0 },
       }
     }
     )
-  }, [lGeometries, size.width, size.height])
+  }, [lGeometries, size.width, size.height, uUvOffset])
+
+  const advance = useTime()
+
+  useFrame((_state, delta) => {
+    const group = groupRef.current
+    if (!group) return
+
+    const t = advance(delta, speed)
+    group.rotation.y = t * TAU * TURNS
+
+    uUvOffset.value.x += velocityX * delta
+    uUvOffset.value.y += velocityY * delta
+    group.traverse(mesh => {
+      if (mesh instanceof THREE.Mesh) {
+        (mesh.material as THREE.ShaderMaterial).uniforms.uFrequency.value = frequency;
+        (mesh.material as THREE.ShaderMaterial).uniforms.uTime.value += delta
+      }
+    })
+  })
 
   return (
     <>
@@ -166,6 +187,7 @@ const OpenCylinder = () => {
         {lGeometries.map((geo, i) => (
           <mesh key={i} geometry={geo}>
             <shaderMaterial
+              key={SHADER_KEY}
               vertexShader={vertShader}
               fragmentShader={fragShader}
               uniforms={uniformsArray[i]}

@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MathUtils, Object3D } from 'three'
 import type { InstancedMesh } from 'three'
-import { advanceLoop } from '../lib/loop'
+import { useTime } from '../lib/loop'
 
 const MAX_FINS = 1200
 const dummy = new Object3D()
@@ -26,20 +26,22 @@ export default function LogSpiralZoom() {
     finWidth: { value: 0.33, min: 0.02, max: 4, step: 0.01 },
     finHeight: { value: 0.28, min: 0.02, max: 4, step: 0.01 },
     finDepth: { value: 0.11, min: 0.001, max: 0.5, step: 0.001 },
-    loopSeconds: { value: 5, min: 0.15, max: 30, step: 0.05 },
+    speed: { value: 0.2, min: 0, max: 2, step: 0.001 },
   })
+
+  const advance = useTime()
 
   useFrame((_state, delta) => {
     const m = mesh.current
     if (!m) return
 
-    const t = advanceLoop(delta, p.loopSeconds)
+    const t = advance(delta, p.speed)
     const twist = MathUtils.degToRad(p.twist)
     const count = Math.min(Math.floor(p.count), MAX_FINS)
     m.count = count
 
     for (let i = 0; i < count; i++) {
-      const e = i + t
+      const e = (i + t) % count
 
       const angle = e * twist
       const growth = Math.pow(p.growth, e)
