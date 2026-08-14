@@ -83,7 +83,7 @@ const OpenCylinder = () => {
 
   const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY, brightnessRandomness, seemEdge, colorA, colorB } = useControls('openCylinder', {
     length: { value: 42.3, min: 0.1, max: 100, step: 0.01 },
-    thickness: { value: 0.15, min: 0.001, max: 2, step: 0.001 },
+    thickness: { value: 0.15, min: 0.001, max: 50, step: 0.001 },
     angle: { value: 90, min: 1, max: 179, step: 1 },
     height: { value: 0.5, min: 0.01, max: 5, step: 0.01 },
     radius: { value: 2.7, min: 0.1, max: 20, step: 0.1 },
