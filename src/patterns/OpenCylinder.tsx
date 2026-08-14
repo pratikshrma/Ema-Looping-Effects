@@ -95,7 +95,7 @@ const OpenCylinder = () => {
   const groupRef = useRef<THREE.Group>(null)
 
 
-  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY } = useControls('openCylinder', {
+  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY, brightnessRandomness, seemEdge } = useControls('openCylinder', {
     length: { value: 42.3, min: 0.1, max: 100, step: 0.01 },
     thickness: { value: 0.15, min: 0.001, max: 2, step: 0.001 },
     angle: { value: 90, min: 1, max: 179, step: 1 },
@@ -108,6 +108,8 @@ const OpenCylinder = () => {
     frequency: { value: 5.0, min: 0.5, max: 30, step: 0.1 },
     velocityX: { value: 0.1, min: -10, max: 10, step: 0.01 },
     velocityY: { value: 0.06, min: -10, max: 10, step: 0.01 },
+    brightnessRandomness: { value: 0.3, min: 0, max: 1, step: 0.01 },
+    seemEdge: { value: 0.2, min: -1, max: 1, step: 0.01, label: 'Seem Edge' },
   })
 
   const uUvOffset = useMemo(() => ({ value: new THREE.Vector2() }), [])
@@ -157,6 +159,9 @@ const OpenCylinder = () => {
         uTime: { value: 0.0 },
         uUvOffset,
         uFrequency: { value: 1.0 },
+        uBrightnessSeed: { value: THREE.MathUtils.seededRandom() * 2 - 1 },
+        uBrightnessRandomness: { value: 0.0 },
+        uSeemEdge: { value: 0.2 },
       }
     }
     )
@@ -176,6 +181,8 @@ const OpenCylinder = () => {
     group.traverse(mesh => {
       if (mesh instanceof THREE.Mesh) {
         (mesh.material as THREE.ShaderMaterial).uniforms.uFrequency.value = frequency;
+        (mesh.material as THREE.ShaderMaterial).uniforms.uBrightnessRandomness.value = brightnessRandomness;
+        (mesh.material as THREE.ShaderMaterial).uniforms.uSeemEdge.value = seemEdge;
         (mesh.material as THREE.ShaderMaterial).uniforms.uTime.value += delta
       }
     })
