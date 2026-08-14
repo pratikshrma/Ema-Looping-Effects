@@ -198,7 +198,6 @@ const OpenCylinder = () => {
               vertexShader={vertShader}
               fragmentShader={fragShader}
               uniforms={uniformsArray[i]}
-              side={THREE.BackSide}
             />
           </mesh>
         ))}
