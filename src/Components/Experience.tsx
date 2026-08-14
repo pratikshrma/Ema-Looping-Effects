@@ -69,7 +69,7 @@ const Experience = () => {
 
       const t = view.controls?.target
       const tuple = (x: number, y: number, z: number) =>
-        `[${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}]`
+        `[${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}]`
 
       const p = view.camera.position
       const text = [
@@ -77,7 +77,7 @@ const Experience = () => {
         `defaultTarget: ${tuple(t?.x ?? 0, t?.y ?? 0, t?.z ?? 0)},`,
       ].join('\n')
 
-      navigator.clipboard?.writeText(text).catch(() => {})
+      navigator.clipboard?.writeText(text).catch(() => { })
       alert(text)
     }),
   })

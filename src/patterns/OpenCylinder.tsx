@@ -71,22 +71,43 @@ const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 
   return geometry
 }
 
-function generateRandomColor(seed: number): THREE.Color {
-  const color = new THREE.Color()
-  color.setHSL(
-    THREE.MathUtils.seededRandom(seed),
-    0.85 + THREE.MathUtils.seededRandom() * 0.15,
-    0.25 + THREE.MathUtils.seededRandom() * 0.15
-  )
-  return color
+// 100% on the ramp — the darkest color in the palette. hue/saturation/lightness
+// are read back off it so the whole ramp is defined by this one swatch.
+// sRGB space throughout, so the numbers match what a color picker shows
+const BASE_GREEN = 0x004021
+const BASE_HSL = new THREE.Color(BASE_GREEN).getHSL({ h: 0, s: 0, l: 0 }, THREE.SRGBColorSpace)
+
+// position t on the ramp: 0% = lightest, 50% = mid green, 100% = BASE_GREEN.
+// the muddy 35%-65% middle is discarded and resampled.
+const BAND_MIN = 0.35
+const BAND_MAX = 0.65
+
+function pickRampPosition(seed: number): number {
+  // seeding once keeps the whole resample chain deterministic per instance
+  let t = THREE.MathUtils.seededRandom(seed)
+  let guard = 0
+  while (t > BAND_MIN && t < BAND_MAX && guard++ < 32) {
+    t = THREE.MathUtils.seededRandom()
+  }
+  return t
 }
 
-function getComplementaryColor(color: THREE.Color): THREE.Color {
+// lightness range is symmetric about 0.5, so t=1 lands exactly on BASE_GREEN
+// and t=0 lands on its mirror, an equally pale green
+function lightnessAt(t: number): number {
+  return THREE.MathUtils.lerp(1.0 - BASE_HSL.l, BASE_HSL.l, t)
+}
+
+function generateRandomColor(seed: number, hue: number, saturation: number): THREE.Color {
+  const l = lightnessAt(pickRampPosition(seed))
+  return new THREE.Color().setHSL(hue, saturation, l, THREE.SRGBColorSpace)
+}
+
+function getComplementaryColor(color: THREE.Color, hue: number): THREE.Color {
   const hsl = { h: 0, s: 0, l: 0 }
-  color.getHSL(hsl)
-  const complementary = new THREE.Color()
-  complementary.setHSL((hsl.h + 0.5) % 1.0, hsl.s, hsl.l) // +0.5 = +180° in normalized hue
-  return complementary
+  color.getHSL(hsl, THREE.SRGBColorSpace)
+  // same hue, mirrored lightness: dark green pairs with light green
+  return new THREE.Color().setHSL(hue, hsl.s, 1.0 - hsl.l, THREE.SRGBColorSpace)
 }
 
 
@@ -95,7 +116,7 @@ const OpenCylinder = () => {
   const groupRef = useRef<THREE.Group>(null)
 
 
-  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY, brightnessRandomness, seemEdge } = useControls('openCylinder', {
+  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY, brightnessRandomness, seemEdge, hue, saturation } = useControls('openCylinder', {
     length: { value: 42.3, min: 0.1, max: 100, step: 0.01 },
     thickness: { value: 0.15, min: 0.001, max: 2, step: 0.001 },
     angle: { value: 90, min: 1, max: 179, step: 1 },
@@ -110,6 +131,8 @@ const OpenCylinder = () => {
     velocityY: { value: 0.06, min: -10, max: 10, step: 0.01 },
     brightnessRandomness: { value: 0.3, min: 0, max: 1, step: 0.01 },
     seemEdge: { value: 0.2, min: -1, max: 1, step: 0.01, label: 'Seem Edge' },
+    hue: { value: BASE_HSL.h, min: 0, max: 1, step: 0.001 },
+    saturation: { value: BASE_HSL.s, min: 0, max: 1, step: 0.01 },
   })
 
   const uUvOffset = useMemo(() => ({ value: new THREE.Vector2() }), [])
@@ -149,8 +172,8 @@ const OpenCylinder = () => {
 
   const uniformsArray = useMemo(() => {
     return lGeometries.map((_, i) => {
-      const randomColor = generateRandomColor(i)
-      const primaryColor = getComplementaryColor(randomColor)
+      const randomColor = generateRandomColor(i, hue, saturation)
+      const primaryColor = getComplementaryColor(randomColor, hue)
       return {
         uResolution: { value: new THREE.Vector2(size.width, size.height) },
         uSeed: { value: THREE.MathUtils.seededRandom(i) },
@@ -165,7 +188,7 @@ const OpenCylinder = () => {
       }
     }
     )
-  }, [lGeometries, size.width, size.height, uUvOffset])
+  }, [lGeometries, size.width, size.height, uUvOffset, hue, saturation])
 
   const advance = useTime()
 
