@@ -18,9 +18,11 @@ type View = { camera: Camera; controls: OrbitLike | null }
 function CameraPreset({
   position,
   target,
+  zoom,
 }: {
   position: [number, number, number]
   target?: [number, number, number]
+  zoom: number
 }) {
   const camera = useThree((s) => s.camera)
   const controls = useThree((s) => s.controls)
@@ -33,6 +35,13 @@ function CameraPreset({
       orbit.update?.()
     }
   }, [camera, controls, position, target])
+
+  // Separate from the preset effect so dragging the zoom slider doesn't also
+  // snap position/target back to the pattern default.
+  useEffect(() => {
+    Object.assign(camera, { zoom })
+    camera.updateProjectionMatrix()
+  }, [camera, zoom])
 
   return null
 }
@@ -59,7 +68,8 @@ const Experience = () => {
       value: patterns[0].id,
       options: patterns.map((entry) => entry.id),
     },
-    background: { value: '#101010' },
+    zoom: { value: 294, min: 1, max: 600, step: 1 },
+    background: { value: '#68AA6A' },
   })
 
   useControls('scene', {
@@ -90,11 +100,16 @@ const Experience = () => {
       <Canvas
         gl={{ antialias: false }}
         dpr={1}
-        camera={{ position: entry.defaultCamera, fov: 15 }}
+        orthographic
+        camera={{ position: entry.defaultCamera, zoom: ui.zoom }}
       >
         <color attach="background" args={[ui.background]} />
         <OrbitControls makeDefault />
-        <CameraPreset position={entry.defaultCamera} target={entry.defaultTarget} />
+        <CameraPreset
+          position={entry.defaultCamera}
+          target={entry.defaultTarget}
+          zoom={ui.zoom}
+        />
         <CameraProbe viewRef={viewRef} />
 
         <Pattern />

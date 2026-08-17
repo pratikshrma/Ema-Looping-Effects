@@ -71,10 +71,8 @@ const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 
   return geometry
 }
 
-// the two ends of the ramp — the noise just mixes between them
-const COLOR_A = '#004021'
-const COLOR_B = '#97d593'
-
+const COLOR_A = '#206F45'
+const COLOR_B = '#6DB476'
 
 const OpenCylinder = () => {
   const { size } = useThree()
@@ -82,20 +80,20 @@ const OpenCylinder = () => {
 
 
   const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY, brightnessRandomness, seemEdge, colorA, colorB } = useControls('openCylinder', {
-    length: { value: 42.3, min: 0.1, max: 100, step: 0.01 },
-    thickness: { value: 0.15, min: 0.001, max: 50, step: 0.001 },
+    length: { value: 100, min: 0.1, max: 100, step: 0.01 },
+    thickness: { value: 50, min: 0.001, max: 50, step: 0.001 },
     angle: { value: 90, min: 1, max: 179, step: 1 },
-    height: { value: 0.5, min: 0.01, max: 5, step: 0.01 },
-    radius: { value: 2.7, min: 0.1, max: 20, step: 0.1 },
-    segments: { value: 32, min: 3, max: 128, step: 1 },
-    endScaleA: { value: 17.4, min: 0.1, max: 50, step: 0.01 },
+    height: { value: 0.34, min: 0.01, max: 5, step: 0.01 },
+    radius: { value: 3.1, min: 0.1, max: 20, step: 0.1 },
+    segments: { value: 50, min: 3, max: 128, step: 1 },
+    endScaleA: { value: 43.7, min: 0.1, max: 50, step: 0.01 },
     endScaleB: { value: 1.0, min: 0.1, max: 50, step: 0.01 },
-    speed: { value: 0.071, min: 0, max: 2, step: 0.001 },
-    frequency: { value: 5.0, min: 0.5, max: 30, step: 0.1 },
+    speed: { value: 0.03, min: 0, max: 2, step: 0.001 },
+    frequency: { value: 2.5, min: 0.5, max: 30, step: 0.1 },
     velocityX: { value: 0.1, min: -10, max: 10, step: 0.01 },
-    velocityY: { value: 0.06, min: -10, max: 10, step: 0.01 },
-    brightnessRandomness: { value: 0.3, min: 0, max: 1, step: 0.01 },
-    seemEdge: { value: 0.2, min: -1, max: 1, step: 0.01, label: 'Seem Edge' },
+    velocityY: { value: 0.006, min: -10, max: 10, step: 0.01 },
+    brightnessRandomness: { value: 0.5, min: 0, max: 1, step: 0.01 },
+    seemEdge: { value: 0.0, min: -1, max: 1, step: 0.01, label: 'Seem Edge' },
     colorA: { value: COLOR_A, label: 'Color A' },
     colorB: { value: COLOR_B, label: 'Color B' },
   })

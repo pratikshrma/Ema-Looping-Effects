@@ -40,32 +40,32 @@ export default function Coil() {
   const { size } = useThree()
 
   const { radius, height, turns, tubeRadius, tubularSegments, radialSegments, speed } = useControls('horizontalCoil', {
-    radius: { value: 0.58, min: 0.1, max: 10, step: 0.01 },
-    height: { value: 19.4, min: 0.1, max: 40, step: 0.01 },
+    radius: { value: 1.6, min: 0.1, max: 10, step: 0.01 },
+    height: { value: 32, min: 0.1, max: 40, step: 0.01 },
     turns: { value: 27, min: 1, max: 50, step: 1 },
-    tubeRadius: { value: 0.09, min: 0.001, max: 2, step: 0.001 },
+    tubeRadius: { value: 0.1, min: 0.001, max: 2, step: 0.001 },
     tubularSegments: { value: 1135, min: 8, max: 2000, step: 1 },
-    radialSegments: { value: 21, min: 3, max: 64, step: 1 },
+    radialSegments: { value: 20, min: 3, max: 64, step: 1 },
     speed: { value: 1.0, min: -10, max: 10, step: 0.01 },
   })
 
   const { color1, color2, seed, frequency, uvScaleX, uvScaleY, brightness, velocityX, velocityY } = useControls('horizontalCoil shader', {
-    color1: { value: '#2c5a2d' },
+    color1: { value: '#2C5A2D' },
     color2: { value: '#669371' },
     seed: { value: 0.5, min: 0, max: 1, step: 0.01 },
-    frequency: { value: 8.1, min: 0.5, max: 30, step: 0.1 },
+    frequency: { value: 8, min: 0.5, max: 30, step: 0.1 },
     uvScaleX: { value: 23.8, min: 0.01, max: 200, step: 0.01 },
     uvScaleY: { value: 0.48, min: 0.01, max: 100, step: 0.01 },
-    brightness: { value: 1.0, min: 0, max: 3, step: 0.01 },
+    brightness: { value: 1.9, min: 0, max: 3, step: 0.01 },
     velocityX: { value: 0.0, min: -10, max: 10, step: 0.01 },
     velocityY: { value: 1.0, min: -10, max: 10, step: 0.01 },
   })
 
   const { bgColor, bgUvScale, bgDotSize, bgBlur } = useControls('background', {
-    bgColor: { value: '#2c5a2d', label: 'color' },
-    bgUvScale: { value: 664, min: 1, max: 3000, step: 1, label: 'uv scale' },
-    bgDotSize: { value: 0.23, min: 0.0, max: 1.0, step: 0.001, label: 'dot size' },
-    bgBlur: { value: 0.001, min: 0.001, max: 1.0, step: 0.001, label: 'blur' },
+    bgColor: { value: '#387239', label: 'color' },
+    bgUvScale: { value: 666, min: 1, max: 3000, step: 1, label: 'uv scale' },
+    bgDotSize: { value: 0, min: 0.0, max: 1.0, step: 0.001, label: 'dot size' },
+    bgBlur: { value: 0.3, min: 0.001, max: 1.0, step: 0.001, label: 'blur' },
   })
 
   const geometry = useMemo(() => {

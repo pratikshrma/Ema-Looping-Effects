@@ -7,12 +7,12 @@ export function Dither() {
 
   const params = useControls('dither', {
     dither: { value: true, label: 'enabled' },
-    pixelScale: { value: 2, min: 1, max: 8, step: 1 },
-    levels: { value: 5, min: 2, max: 8, step: 1 },
+    pixelScale: { value: 4, min: 1, max: 8, step: 1 },
+    levels: { value: 8, min: 2, max: 8, step: 1 },
     matrixSize: { value: 4, options: { '4x4': 4, '8x8': 8 } },
     mono: { value: true },
-    contrast: { value: 1.8, min: 0, max: 4, step: 0.01 },
-    brightness: { value: 0.24, min: -1, max: 1, step: 0.01 },
+    contrast: { value: 2.4, min: 0, max: 4, step: 0.01 },
+    brightness: { value: 0.44, min: -1, max: 1, step: 0.01 },
   })
 
   useEffect(() => {

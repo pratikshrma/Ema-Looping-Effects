@@ -17,7 +17,7 @@ export type PatternEntry = {
 
 export const patterns: PatternEntry[] = [
   { id: 'horizontalCoil', Component: Coil, defaultCamera: [-7.6, 0.4, 8.8], defaultTarget: [0, 0, 0] },
-  { id: 'openCylinder', Component: OpenCylinder, defaultCamera: [14.53, -6.19, 5.79], defaultTarget: [0.76, 1.68, 0.51] },
+  { id: 'openCylinder', Component: OpenCylinder, defaultCamera: [11.9, 13.7, 7.1], defaultTarget: [0.1, 2.7, 0.0] },
   { id: 'phyllotaxis', Component: Phyllotaxis, defaultCamera: [0, 9, 16], defaultTarget: [0, 0, 0] },
   { id: 'travellingPulse', Component: TravellingPulse, defaultCamera: [0, 4, 14], defaultTarget: [0, 0, 0] },
   { id: 'logSpiralZoom', Component: LogSpiralZoom, defaultCamera: [9.09, 2.31, 16.04], defaultTarget: [0.12, 2.16, -0.09] },
