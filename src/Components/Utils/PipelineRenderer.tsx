@@ -92,12 +92,14 @@ const PipelineRenderer = ({ activeId }: { activeId: string }) => {
   }, [sheet])
 
   useFrame(({ gl }) => {
-    for (let i = 0; i < pipeline.length; i++) {
-      const { scene, target } = pipeline[i]
-      gl.setRenderTarget(target)
-      console.log(cameraRefs[i].current)
-      gl.render(scene, cameraRefs[i].current ?? rootCamera)
-    }
+    // for (let i = 0; i < pipeline.length; i++) {
+    //   const { scene, target } = pipeline[i]
+    //   gl.setRenderTarget(target)
+    //   gl.render(scene, cameraRefs[i].current ?? rootCamera)
+    // }
+
+    gl.setRenderTarget(pipeline[activeIndex].target)
+    gl.render(pipeline[activeIndex].scene, cameraRefs[activeIndex].current ?? rootCamera)
     gl.setRenderTarget(null)
 
     const u = material.uniforms
