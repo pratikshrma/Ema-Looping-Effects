@@ -1,17 +1,18 @@
-import { useMemo, useRef } from "react"
-import { useControls } from 'leva'
+import { useEffect, useMemo, useRef, useState } from "react"
+import { types as t } from '@theatre/core'
+import { useCurrentSheet } from '@theatre/r3f'
 import * as THREE from 'three'
 import { useThree, useFrame } from '@react-three/fiber'
 
-import fragShader from '../Shaders/OpenCylinder/frag.glsl?raw'
-import vertShader from '../Shaders/OpenCylinder/vert.glsl?raw'
-import { TAU, useTime } from "../lib/loop"
+import fragShader from '../../Shaders/OpenCylinder/frag.glsl?raw'
+import vertShader from '../../Shaders/OpenCylinder/vert.glsl?raw'
+import { TAU, useTime } from "../../lib/loop"
 
 const TURNS = 1
 const SHADER_KEY = vertShader + fragShader
 
 function intersectLines(p1: THREE.Vector2, d1: THREE.Vector2, p2: THREE.Vector2, d2: THREE.Vector2): THREE.Vector2 {
-  const denom = d1.x * d2.y - d1.y * d2.x; // 0 if the lines are parallel
+  const denom = d1.x * d2.y - d1.y * d2.x;
   const diff = new THREE.Vector2().subVectors(p2, p1);
   const s = (diff.x * d2.y - diff.y * d2.x) / denom;
   return p1.clone().addScaledVector(d1, s);
@@ -51,11 +52,9 @@ const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 
     const x = posAttr.getX(i)
     const y = posAttr.getY(i)
 
-    // how far along each arm this vertex is
     const s1 = x * d1.x + y * d1.y
     const s2 = x * d2.x + y * d2.y
 
-    // pick the arm it actually belongs to
     const onArmA = s1 >= s2
     const along = onArmA ? s1 : s2
     const endScale = onArmA ? endScaleA : endScaleB
@@ -74,44 +73,102 @@ const curveMesh = (length: number = 2, thickness: number = 0.5, angle: number = 
 const COLOR_A = '#206F45'
 const COLOR_B = '#6DB476'
 
+const toRgba = (hex: string) => {
+  const c = new THREE.Color().setStyle(hex, THREE.SRGBColorSpace).convertLinearToSRGB()
+  return { r: c.r, g: c.g, b: c.b, a: 1 }
+}
+
+const SHAPE_DEFAULTS = {
+  length: 100,
+  thickness: 50,
+  angle: 90,
+  height: 0.34,
+  radius: 3.1,
+  segments: 50,
+  endScaleA: 43.7,
+  endScaleB: 1.0,
+}
+
+const MOTION_DEFAULTS = {
+  speed: 0.03,
+  frequency: 2.5,
+  velocityX: 0.1,
+  velocityY: 0.006,
+  brightnessRandomness: 0.5,
+  seemEdge: 0.0,
+}
+
 const OpenCylinder = () => {
   const { size } = useThree()
   const groupRef = useRef<THREE.Group>(null)
 
+  const sheet = useCurrentSheet()
+  const [shape, setShape] = useState(SHAPE_DEFAULTS)
+  const motion = useRef(MOTION_DEFAULTS)
 
-  const { length, thickness, angle, height, radius, segments, endScaleA, endScaleB, speed, frequency, velocityX, velocityY, brightnessRandomness, seemEdge, colorA, colorB } = useControls('openCylinder', {
-    length: { value: 100, min: 0.1, max: 100, step: 0.01 },
-    thickness: { value: 50, min: 0.001, max: 50, step: 0.001 },
-    angle: { value: 90, min: 1, max: 179, step: 1 },
-    height: { value: 0.34, min: 0.01, max: 5, step: 0.01 },
-    radius: { value: 3.1, min: 0.1, max: 20, step: 0.1 },
-    segments: { value: 50, min: 3, max: 128, step: 1 },
-    endScaleA: { value: 43.7, min: 0.1, max: 50, step: 0.01 },
-    endScaleB: { value: 1.0, min: 0.1, max: 50, step: 0.01 },
-    speed: { value: 0.03, min: 0, max: 2, step: 0.001 },
-    frequency: { value: 2.5, min: 0.5, max: 30, step: 0.1 },
-    velocityX: { value: 0.1, min: -10, max: 10, step: 0.01 },
-    velocityY: { value: 0.006, min: -10, max: 10, step: 0.01 },
-    brightnessRandomness: { value: 0.5, min: 0, max: 1, step: 0.01 },
-    seemEdge: { value: 0.0, min: -1, max: 1, step: 0.01, label: 'Seem Edge' },
-    colorA: { value: COLOR_A, label: 'Color A' },
-    colorB: { value: COLOR_B, label: 'Color B' },
-  })
+  const color1 = useMemo(() => new THREE.Color().setStyle(COLOR_A, THREE.SRGBColorSpace), [])
+  const color2 = useMemo(() => new THREE.Color().setStyle(COLOR_B, THREE.SRGBColorSpace), [])
 
-  // the picker hands back a css string; parse it once per change, not per mesh per frame
-  const color1 = useMemo(() => new THREE.Color().setStyle(colorA, THREE.SRGBColorSpace), [colorA])
-  const color2 = useMemo(() => new THREE.Color().setStyle(colorB, THREE.SRGBColorSpace), [colorB])
+  useEffect(() => {
+    if (!sheet) return
+    const obj = sheet.object('OpenCylinder / Properties', {
+      length: t.number(SHAPE_DEFAULTS.length, { range: [0.1, 100], nudgeMultiplier: 0.01 }),
+      thickness: t.number(SHAPE_DEFAULTS.thickness, { range: [0.001, 50], nudgeMultiplier: 0.001 }),
+      angle: t.number(SHAPE_DEFAULTS.angle, { range: [1, 179], nudgeMultiplier: 1 }),
+      height: t.number(SHAPE_DEFAULTS.height, { range: [0.01, 5], nudgeMultiplier: 0.01 }),
+      radius: t.number(SHAPE_DEFAULTS.radius, { range: [0.1, 20], nudgeMultiplier: 0.1 }),
+      segments: t.number(SHAPE_DEFAULTS.segments, { range: [3, 128], nudgeMultiplier: 1 }),
+      endScaleA: t.number(SHAPE_DEFAULTS.endScaleA, { range: [0.1, 50], nudgeMultiplier: 0.01 }),
+      endScaleB: t.number(SHAPE_DEFAULTS.endScaleB, { range: [0.1, 50], nudgeMultiplier: 0.01 }),
+      speed: t.number(MOTION_DEFAULTS.speed, { range: [0, 2], nudgeMultiplier: 0.001 }),
+      frequency: t.number(MOTION_DEFAULTS.frequency, { range: [0.5, 30], nudgeMultiplier: 0.1 }),
+      velocityX: t.number(MOTION_DEFAULTS.velocityX, { range: [-10, 10], nudgeMultiplier: 0.01 }),
+      velocityY: t.number(MOTION_DEFAULTS.velocityY, { range: [-10, 10], nudgeMultiplier: 0.01 }),
+      brightnessRandomness: t.number(MOTION_DEFAULTS.brightnessRandomness, { range: [0, 1], nudgeMultiplier: 0.01 }),
+      seemEdge: t.number(MOTION_DEFAULTS.seemEdge, { range: [-1, 1], nudgeMultiplier: 0.01 }),
+      colorA: t.rgba(toRgba(COLOR_A)),
+      colorB: t.rgba(toRgba(COLOR_B)),
+    }, { reconfigure: true })
+
+    return obj.onValuesChange((v) => {
+      motion.current = {
+        speed: v.speed,
+        frequency: v.frequency,
+        velocityX: v.velocityX,
+        velocityY: v.velocityY,
+        brightnessRandomness: v.brightnessRandomness,
+        seemEdge: v.seemEdge,
+      }
+      color1.setRGB(v.colorA.r, v.colorA.g, v.colorA.b, THREE.SRGBColorSpace)
+      color2.setRGB(v.colorB.r, v.colorB.g, v.colorB.b, THREE.SRGBColorSpace)
+
+      setShape((prev) => {
+        const next = {
+          length: v.length,
+          thickness: v.thickness,
+          angle: v.angle,
+          height: v.height,
+          radius: v.radius,
+          segments: Math.round(v.segments),
+          endScaleA: v.endScaleA,
+          endScaleB: v.endScaleB,
+        }
+        const same = (Object.keys(next) as (keyof typeof next)[]).every((k) => prev[k] === next[k])
+        return same ? prev : next
+      })
+    })
+  }, [sheet, color1, color2])
 
   const uUvOffset = useMemo(() => ({ value: new THREE.Vector2() }), [])
 
   const lGeometries = useMemo(() => {
     const lGeometries: THREE.ExtrudeGeometry[] = []
-    const defaultLGeo = curveMesh(length, thickness, angle, height, endScaleA, endScaleB)
+    const defaultLGeo = curveMesh(shape.length, shape.thickness, shape.angle, shape.height, shape.endScaleA, shape.endScaleB)
 
-    const circleGeo = new THREE.CircleGeometry(1, segments)
+    const circleGeo = new THREE.CircleGeometry(1, shape.segments)
     circleGeo.rotateX(1.57)
 
-    circleGeo.scale(radius, radius, radius)
+    circleGeo.scale(shape.radius, shape.radius, shape.radius)
 
     const positionsAttr = circleGeo.attributes.position as THREE.BufferAttribute
     const positions = positionsAttr.array as Float32Array
@@ -134,12 +191,10 @@ const OpenCylinder = () => {
       lGeometries.push(tempGeo)
     }
     return lGeometries
-    // return circleGeo
-  }, [length, thickness, angle, height, radius, segments, endScaleA, endScaleB])
+  }, [shape])
 
   const uniformsArray = useMemo(() => {
     return lGeometries.map((_, i) => {
-      // seeding once per instance keeps the noise/brightness chain deterministic
       const seed = THREE.MathUtils.seededRandom(i)
       return {
         uResolution: { value: new THREE.Vector2(size.width, size.height) },
@@ -163,19 +218,20 @@ const OpenCylinder = () => {
     const group = groupRef.current
     if (!group) return
 
-    const t = advance(delta, speed)
-    group.rotation.y = t * TAU * TURNS
+    const m = motion.current
+    const time = advance(delta, m.speed)
+    group.rotation.y = time * TAU * TURNS
 
-    uUvOffset.value.x += velocityX * delta
-    uUvOffset.value.y += velocityY * delta
+    uUvOffset.value.x += m.velocityX * delta
+    uUvOffset.value.y += m.velocityY * delta
     group.traverse(mesh => {
       if (mesh instanceof THREE.Mesh) {
         const uniforms = (mesh.material as THREE.ShaderMaterial).uniforms
         uniforms.uColor1.value.copy(color1)
         uniforms.uColor2.value.copy(color2)
-        uniforms.uFrequency.value = frequency
-        uniforms.uBrightnessRandomness.value = brightnessRandomness
-        uniforms.uSeemEdge.value = seemEdge
+        uniforms.uFrequency.value = m.frequency
+        uniforms.uBrightnessRandomness.value = m.brightnessRandomness
+        uniforms.uSeemEdge.value = m.seemEdge
         uniforms.uTime.value += delta
       }
     })
