@@ -1,0 +1,143 @@
+{
+  "sheetsById": {
+    "Main": {
+      "staticOverrides": {
+        "byObject": {
+          "Scene": {
+            "pattern": "TravellingWave"
+          },
+          "RightCoil / Camera / Transformation": {
+            "position": {
+              "z": 0,
+              "y": 0,
+              "x": 0
+            },
+            "near": -16.800000000000004
+          },
+          "RightCoil / Camera / Zoom": {
+            "zoom": 199
+          },
+          "RightCoil / Dither": {
+            "enabled": true,
+            "pixelScale": 2,
+            "levels": 2,
+            "mono": false,
+            "matrixSize": "8"
+          },
+          "OpenCylinder / Camera / Transformation": {
+            "position": {
+              "z": 0,
+              "y": 0,
+              "x": 0
+            },
+            "near": 0,
+            "fov": -36.20000000000001,
+            "rotation": {
+              "x": 1.57,
+              "z": 0,
+              "y": 0
+            },
+            "zoom": 0.059999999999999824
+          },
+          "OpenCylinder / Dither": {
+            "enabled": true,
+            "mono": true
+          },
+          "OpenCylinder / Properties": {
+            "segments": 49,
+            "height": 0.37,
+            "angle": 76,
+            "endScaleA": 35.529999999999994,
+            "radius": 5.900000000000004,
+            "endScaleB": 16.900000000000006
+          },
+          "RightCoil / Background": {
+            "uvScale": 767,
+            "color": {
+              "r": 0.17254901960784313,
+              "g": 0.3764705882352941,
+              "b": 0.17647058823529413,
+              "a": 1
+            }
+          },
+          "Phyllotaxis / Camera / Transformation": {
+            "rotation": {
+              "z": 0
+            },
+            "position": {
+              "z": 12.989999999999993
+            }
+          },
+          "Phyllotaxis / Dither": {
+            "enabled": false
+          },
+          "Phyllotaxis / Model": {
+            "position": {
+              "y": 0
+            },
+            "rotation": {
+              "z": 0,
+              "x": 0.8400000000000001,
+              "y": 0
+            }
+          },
+          "OpenCylinder / Model": {
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "position": {
+              "y": 0
+            },
+            "rotation": {
+              "x": 0.6199999999999989
+            }
+          },
+          "OpenCylinder / Camera / Transformations": {
+            "position": {
+              "z": 12.629999999999933
+            }
+          },
+          "Phyllotaxis / Properties": {
+            "count": 352
+          },
+          "LogSpiralZoom / Dither": {
+            "enabled": false
+          },
+          "TravellingPulse / Camera / Transformation": {
+            "position": {
+              "z": 10
+            }
+          },
+          "LogSpiralZoom / Camera / Transformation": {
+            "position": {
+              "z": 4.259999999999999,
+              "y": 2.1699999999999986
+            }
+          },
+          "BentSpine / Camera / Transformation": {
+            "position": {
+              "z": 10
+            }
+          },
+          "TwistBreathing / Camera / Transformation": {
+            "position": {
+              "z": 10
+            }
+          },
+          "TravellingWave / Camera / Transformation": {
+            "position": {
+              "z": 10
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitionVersion": "0.4.0",
+  "revisionHistory": [
+    "ota--7UWD13tRLKd",
+    "ILkniWkI11_UW6jp"
+  ]
+}

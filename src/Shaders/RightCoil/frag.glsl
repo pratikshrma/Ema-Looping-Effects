@@ -1,5 +1,3 @@
-// Classic Perlin 2D noise
-// Author: Stefan Gustavson (https://github.com/stegu/webgl-noise)
 
 vec4 permute(vec4 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
 
@@ -8,7 +6,7 @@ vec2 fade(vec2 t) { return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); }
 float cnoise(vec2 P) {
   vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
   vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
-  Pi = mod(Pi, 289.0); // avoid truncation in permutation
+  Pi = mod(Pi, 289.0);
   vec4 ix = Pi.xzxz;
   vec4 iy = Pi.yyww;
   vec4 fx = Pf.xzxz;
@@ -16,7 +14,7 @@ float cnoise(vec2 P) {
 
   vec4 i = permute(permute(ix) + iy);
 
-  vec4 gx = 2.0 * fract(i * 0.0243902439) - 1.0; // 1/41 = 0.024...
+  vec4 gx = 2.0 * fract(i * 0.0243902439) - 1.0;
   vec4 gy = abs(gx) - 0.5;
   vec4 tx = floor(gx + 0.5);
   gx = gx - tx;
@@ -57,7 +55,6 @@ uniform float uBrightness;
 varying vec2 vUv;
 
 void main() {
-  // vec2 uv = gl_FragCoord.xy / uResolution.xy;
   vec2 uv = vUv * uUvScale;
 
   float freq = uFrequency * (0.5 + uSeed);

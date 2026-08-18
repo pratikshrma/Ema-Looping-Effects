@@ -1,3 +1,4 @@
+uniform sampler2D uScene;
 uniform vec2 uResolution;
 uniform float uPixelScale;
 uniform float uLevels;
@@ -7,24 +8,28 @@ uniform float uContrast;
 uniform float uBrightness;
 uniform float uEnabled;
 
-// Must stay a pure function of screen position. Random or time-varying noise
-// dithering would break every loop while leaving the geometry correct.
+varying vec2 vUv;
+
 float bayer2(vec2 a) {
   a = floor(a);
   return fract(a.x * 0.5 + a.y * a.y * 0.75);
 }
 
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+vec3 toSRGB(vec3 c) {
+  return mix(c * 12.92, 1.055 * pow(c, vec3(0.41666)) - 0.055, step(0.0031308, c));
+}
+
+void main() {
   if (uEnabled < 0.5) {
-    outputColor = inputColor;
+    gl_FragColor = vec4(toSRGB(texture2D(uScene, vUv).rgb), 1.0);
     return;
   }
 
-  vec2 pixel = uv * uResolution;
+  vec2 pixel = vUv * uResolution;
   vec2 cell = floor(pixel / uPixelScale);
 
   vec2 snapped = (cell + 0.5) * uPixelScale / uResolution;
-  vec3 c = texture2D(inputBuffer, snapped).rgb;
+  vec3 c = texture2D(uScene, snapped).rgb;
 
   c = clamp((c - 0.5) * uContrast + 0.5 + uBrightness, 0.0, 1.0);
 
@@ -42,5 +47,5 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
     c = floor(c * n + threshold) / n;
   }
 
-  outputColor = vec4(clamp(c, 0.0, 1.0), inputColor.a);
+  gl_FragColor = vec4(toSRGB(clamp(c, 0.0, 1.0)), 1.0);
 }
