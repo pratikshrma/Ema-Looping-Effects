@@ -3,8 +3,8 @@ import { types as t } from '@theatre/core'
 import { useThree } from '@react-three/fiber'
 import { useEffect } from 'react'
 import * as THREE from 'three'
-import OffsetWaves from './OffsetWaves'
-import OffsetWavesCamera from './OffsetWavessCamera'
+import OffsetWaves3D from './OffsetWaves3D'
+import OffsetWaves3DCamera from './OffsetWaves3DCamera'
 import type { PatternCamera } from '../registry'
 
 const COLOR = '#387239'
@@ -14,13 +14,13 @@ const toRgba = (hex: string) => {
   return { r: c.r, g: c.g, b: c.b, a: 1 }
 }
 
-const OffsetWavesScene = ({ cameraRef }: { cameraRef: React.RefObject<PatternCamera | null> }) => {
+const OffsetWaves3DScene = ({ cameraRef }: { cameraRef: React.RefObject<PatternCamera | null> }) => {
   const scene = useThree((s) => s.scene)
   const sheet = useCurrentSheet()
 
   useEffect(() => {
     if (!sheet) return
-    const obj = sheet.object('OffsetWaves / Background', {
+    const obj = sheet.object('OffsetWaves3D / Background', {
       color: t.rgba(toRgba(COLOR)),
     }, { reconfigure: true })
 
@@ -39,12 +39,12 @@ const OffsetWavesScene = ({ cameraRef }: { cameraRef: React.RefObject<PatternCam
 
   return (
     <>
-      <OffsetWavesCamera ref={cameraRef} />
-      <e.group theatreKey="OffsetWaves / Model">
-        <OffsetWaves />
+      <OffsetWaves3DCamera ref={cameraRef} />
+      <e.group theatreKey="OffsetWaves3D / Model">
+        <OffsetWaves3D />
       </e.group>
     </>
   )
 }
 
-export default OffsetWavesScene
+export default OffsetWaves3DScene
