@@ -27,10 +27,9 @@ const SHAPE_DEFAULTS = {
 }
 
 const MOTION_DEFAULTS = {
-  topWavePhase: 0,
-  bottomWavePhase: 180,
-  topWaveSpeed: 1.0,
-  bottomWaveSpeed: 1.0,
+  wavePhase: 0,
+  waveSpeed: 1.0,
+  waveTravel: 1.0,
 }
 
 const SHADER_DEFAULTS = {
@@ -45,8 +44,7 @@ const SHADER_DEFAULTS = {
 
 const OffsetWaves = () => {
   const sheet = useCurrentSheet()
-  const topGroupRef = useRef<THREE.Group>(null)
-  const bottomGroupRef = useRef<THREE.Group>(null)
+  const groupRef = useRef<THREE.Group>(null)
 
   // shape rebuilds the geometry, motion is only read per frame
   const [shape, setShape] = useState(SHAPE_DEFAULTS)
@@ -78,19 +76,17 @@ const OffsetWaves = () => {
         totalGap: t.number(SHAPE_DEFAULTS.boxesGap, { range: [MIN_GAP, 4], nudgeMultiplier: 0.01 }),
         boxHeight: t.number(SHAPE_DEFAULTS.boxHeight, { range: [0, 10], nudgeMultiplier: 0.01 }),
         boxWidth: t.number(SHAPE_DEFAULTS.boxWidth, { range: [0, 10], nudgeMultiplier: 0.01 }),
-        topWavePhase: t.number(MOTION_DEFAULTS.topWavePhase, { range: [0, 180], nudgeMultiplier: 1 }),
-        bottomWavePhase: t.number(MOTION_DEFAULTS.bottomWavePhase, { range: [0, 180], nudgeMultiplier: 1 }),
-        topWaveSpeed: t.number(MOTION_DEFAULTS.topWaveSpeed, { range: [-30, 30], nudgeMultiplier: 0.01 }),
-        bottomWaveSpeed: t.number(MOTION_DEFAULTS.bottomWaveSpeed, { range: [-30, 30], nudgeMultiplier: 0.01 }),
+        wavePhase: t.number(MOTION_DEFAULTS.wavePhase, { range: [0, 180], nudgeMultiplier: 1 }),
+        waveSpeed: t.number(MOTION_DEFAULTS.waveSpeed, { range: [-30, 30], nudgeMultiplier: 0.01 }),
+        waveTravel: t.number(MOTION_DEFAULTS.waveTravel, { range: [-10, 10], nudgeMultiplier: 0.01 }),
       }
       , { reconfigure: true })
 
     return obj.onValuesChange(v => {
       motion.current = {
-        topWavePhase: v.topWavePhase,
-        bottomWavePhase: v.bottomWavePhase,
-        topWaveSpeed: v.topWaveSpeed,
-        bottomWaveSpeed: v.bottomWaveSpeed,
+        wavePhase: v.wavePhase,
+        waveSpeed: v.waveSpeed,
+        waveTravel: v.waveTravel,
       }
       setShape(prev =>
         prev.totalBoxes === v.totalBoxes &&
@@ -129,19 +125,16 @@ const OffsetWaves = () => {
     })
   }, [sheet, sharedUniforms])
 
-  const [topPlaneMeshes, bottomPlaneMeshes] = useMemo(() => {
+  const planeMeshes = useMemo(() => {
     const count = Math.max(1, Math.round(shape.totalBoxes))
     const gap = Math.max(MIN_GAP, shape.boxesGap)
     const span = (count - 1) * gap
 
-    // one geometry per row, shared by every mesh in that row
-    const topGeo = new THREE.PlaneGeometry(shape.boxWidth, shape.boxHeight)
-    topGeo.translate(0, shape.boxHeight / 2, 0)
-    const bottomGeo = new THREE.PlaneGeometry(shape.boxWidth, shape.boxHeight)
-    bottomGeo.translate(0, -shape.boxHeight / 2, 0)
+    // one geometry, shared by every mesh; centred so scale.y grows both ways
+    const geo = new THREE.PlaneGeometry(shape.boxWidth, shape.boxHeight)
 
     // a material each, so uSeed is actually per box
-    const makeMesh = (geo: THREE.PlaneGeometry, x: number, seed: number, frequencySeed: number) => {
+    const makeMesh = (x: number, seed: number, frequencySeed: number) => {
       const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({
         vertexShader: vertShader,
         fragmentShader: fragShader,
@@ -158,53 +151,40 @@ const OffsetWaves = () => {
     THREE.MathUtils.seededRandom(RANDOM_SEED)
     const rand = () => THREE.MathUtils.seededRandom()
 
-    const top: THREE.Mesh[] = []
-    const bottom: THREE.Mesh[] = []
+    const meshes: THREE.Mesh[] = []
     for (let i = 0; i < count; i++) {
-      const x = -span / 2 + i * gap
-      top.push(makeMesh(topGeo, x, rand(), rand()))
-      bottom.push(makeMesh(bottomGeo, x, rand(), rand()))
+      meshes.push(makeMesh(-span / 2 + i * gap, rand(), rand()))
     }
 
-    return [top, bottom]
+    return meshes
   }, [shape, sharedUniforms])
 
   useEffect(() => {
     return () => {
-      topPlaneMeshes[0]?.geometry.dispose()
-      bottomPlaneMeshes[0]?.geometry.dispose()
-      for (const mesh of topPlaneMeshes) (mesh.material as THREE.ShaderMaterial).dispose()
-      for (const mesh of bottomPlaneMeshes) (mesh.material as THREE.ShaderMaterial).dispose()
+      planeMeshes[0]?.geometry.dispose()
+      for (const mesh of planeMeshes) (mesh.material as THREE.ShaderMaterial).dispose()
     }
-  }, [topPlaneMeshes, bottomPlaneMeshes])
+  }, [planeMeshes])
 
-  const advanceTop = useTime()
-  const advanceBottom = useTime()
+  const advance = useTime()
 
   useFrame((_state, delta) => {
     const m = motion.current
 
-    const topTime = advanceTop(delta, m.topWaveSpeed)
-    const bottomTime = advanceBottom(delta, m.bottomWaveSpeed)
-    const topPhase = THREE.MathUtils.degToRad(m.topWavePhase)
-    const bottomPhase = THREE.MathUtils.degToRad(m.bottomWavePhase)
+    const time = advance(delta, m.waveSpeed)
+    const phase = THREE.MathUtils.degToRad(m.wavePhase)
 
-    for (const mesh of topGroupRef.current?.children ?? []) {
-      mesh.scale.y = Math.sin(mesh.position.x + topTime + topPhase) + 1.0
-    }
-    for (const mesh of bottomGroupRef.current?.children ?? []) {
-      mesh.scale.y = Math.sin(mesh.position.x + bottomTime + bottomPhase) + 1.0
+    for (const mesh of groupRef.current?.children ?? []) {
+      // one wave drives both, so the stretch and the travel stay in step
+      const wave = Math.sin(mesh.position.x + time + phase)
+      mesh.scale.y = wave
+      mesh.position.y = wave * m.waveTravel
     }
   })
 
   return (
-    <group>
-      <group ref={topGroupRef}>
-        {topPlaneMeshes.map(mesh => <primitive key={mesh.uuid} object={mesh} />)}
-      </group>
-      <group ref={bottomGroupRef}>
-        {bottomPlaneMeshes.map(mesh => <primitive key={mesh.uuid} object={mesh} />)}
-      </group>
+    <group ref={groupRef}>
+      {planeMeshes.map(mesh => <primitive key={mesh.uuid} object={mesh} />)}
     </group>
   )
 }
