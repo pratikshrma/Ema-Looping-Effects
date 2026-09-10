@@ -4,13 +4,13 @@
       "staticOverrides": {
         "byObject": {
           "Scene": {
-            "pattern": "TravellingWave"
+            "pattern": "OffsetWaves2D"
           },
           "RightCoil / Camera / Transformation": {
             "position": {
-              "z": 0,
-              "y": 0,
-              "x": 0
+              "z": -3.0694164809428184,
+              "y": 0.3690183705374346,
+              "x": 1.8655578434115494
             },
             "near": -16.800000000000004
           },
@@ -41,7 +41,7 @@
           },
           "OpenCylinder / Dither": {
             "enabled": true,
-            "mono": true
+            "mono": false
           },
           "OpenCylinder / Properties": {
             "segments": 49,
@@ -103,7 +103,8 @@
             "count": 352
           },
           "LogSpiralZoom / Dither": {
-            "enabled": false
+            "enabled": true,
+            "mono": false
           },
           "TravellingPulse / Camera / Transformation": {
             "position": {
@@ -130,6 +131,122 @@
             "position": {
               "z": 10
             }
+          },
+          "TravellingWave / Properties": {
+            "speed": 0.3700000000000002,
+            "radius": 2.0800000000000014,
+            "finWidth": 1.1299999999999994,
+            "amplitude": 0,
+            "rise": 0.092,
+            "waves": 1,
+            "twist": 8.70000000000002
+          },
+          "OffsetWaves / Dither": {
+            "enabled": true,
+            "mono": false,
+            "contrast": 2.5700000000000003,
+            "matrixSize": "4",
+            "levels": 3,
+            "pixelScale": 3,
+            "brightness": 0.51
+          },
+          "OffsetWaves / Camera / Zoom": {
+            "zoom": 306
+          },
+          "OffsetWaves / Camera / Transformation": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            "far": 10
+          },
+          "OffsetWaves / Props": {
+            "totalBoxes": 42,
+            "boxesGap": -0.5,
+            "totalGap": 0.18,
+            "boxHeight": 1.2899999999999998,
+            "boxWidth": 3.1500000000000035,
+            "topWavePhase": 0,
+            "bottomWavePhase": 180,
+            "topWaveSpeed": 1,
+            "bottomWaveSpeed": 1,
+            "waveTravel": 1.8299999999999996,
+            "waveSpeed": 1.5100000000000047,
+            "wavePhase": 129,
+            "waveMax": 2.0800000000000014,
+            "waveMin": 1.9000000000000048,
+            "geometry": "circle"
+          },
+          "OffsetWaves / Shader": {
+            "uvScaleX": 34.959999999999994,
+            "uvScaleY": 17.03999999999999,
+            "frequency": 0.5000000000000003,
+            "brightness": 0.9900000000000002,
+            "frequencyRandomness": 0,
+            "timeScale": 1.0100000000000027,
+            "brightnessRandomness": 0.38000000000000006
+          },
+          "OffsetWaves / Background": {
+            "color": {
+              "r": 0.34901960784313724,
+              "g": 0.39215686274509803,
+              "b": 0.3137254901960784,
+              "a": 1
+            }
+          },
+          "OffsetWaves / Model": {
+            "position": {
+              "x": -0.8700000000000021
+            },
+            "scale": {
+              "y": 0.43999999999999834,
+              "x": 0.6699999999999997,
+              "z": 0.2899999999999996
+            }
+          },
+          "OffsetWaves2D / Props": {
+            "geometry": "square",
+            "boxWidth": 0.1800000000000013,
+            "totalGap": 0.17999999999999888,
+            "boxHeight": 2.570000000000004,
+            "totalBoxes": 74,
+            "waveMin": 0.34999999999999953,
+            "waveMax": 0.7199999999999998
+          },
+          "OffsetWaves2D / Dither": {
+            "pixelScale": 2,
+            "levels": 5,
+            "mono": false,
+            "contrast": 3.2600000000000064,
+            "brightness": 0.8700000000000002
+          },
+          "OffsetWaves2D / Background": {
+            "color": {
+              "r": 0.3176470588235294,
+              "g": 0.32941176470588235,
+              "b": 0.3215686274509804,
+              "a": 1
+            }
+          },
+          "OffsetWaves3D / Props": {
+            "geometry": "square",
+            "boxWidth": 2.710000000000011,
+            "boxHeight": 1.6200000000000019,
+            "totalBoxes": 126,
+            "totalGap": 0.08
+          },
+          "OffsetWaves3D / Dither": {
+            "pixelScale": 2,
+            "mono": false
+          },
+          "OffsetWaves3D / Background": {
+            "color": {
+              "r": 0.27450980392156865,
+              "g": 0.37254901960784315,
+              "b": 0.2784313725490196,
+              "a": 1
+            }
           }
         }
       }
@@ -137,6 +254,9 @@
   },
   "definitionVersion": "0.4.0",
   "revisionHistory": [
+    "hF2QxDvPKEulKkqC",
+    "o-GsVKw9NlLqn7y4",
+    "Yv7Zyb9rfNLuH_Jz",
     "ota--7UWD13tRLKd",
     "ILkniWkI11_UW6jp"
   ]
