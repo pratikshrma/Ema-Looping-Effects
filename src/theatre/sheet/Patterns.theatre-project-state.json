@@ -4,7 +4,7 @@
       "staticOverrides": {
         "byObject": {
           "Scene": {
-            "pattern": "OffsetWaves2D"
+            "pattern": "RightCoil"
           },
           "RightCoil / Camera / Transformation": {
             "position": {
@@ -254,6 +254,7 @@
   },
   "definitionVersion": "0.4.0",
   "revisionHistory": [
+    "d1GaLMm0yvaGGg79",
     "hF2QxDvPKEulKkqC",
     "o-GsVKw9NlLqn7y4",
     "Yv7Zyb9rfNLuH_Jz",
