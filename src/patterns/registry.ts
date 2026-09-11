@@ -11,6 +11,8 @@ import LogSpiralZoomScene from './LogSpiralZoom/LogSpiralZoomScene'
 import BentSpineScene from './BentSpine/BentSpineScene'
 import TwistBreathingScene from './TwistBreathing/TwistBreathingScene'
 import TravellingWaveScene from './TravellingWave/TravellingWaveScene'
+import OffsetWaves2DScene from './OffsetWaves2D/OffsetWaves2DScene'
+import OffsetWaves3DScene from './OffsetWaves3D/OffsetWaves3DScene'
 
 export type SceneProps = {
   cameraRef: RefObject<PatternCamera | null>
@@ -30,4 +32,6 @@ export const patterns: PatternEntry[] = [
   { id: 'BentSpine', Component: BentSpineScene },
   { id: 'TwistBreathing', Component: TwistBreathingScene },
   { id: 'TravellingWave', Component: TravellingWaveScene },
+  { id: 'OffsetWaves2D', Component: OffsetWaves2DScene },
+  { id: 'OffsetWaves3D', Component: OffsetWaves3DScene },
 ]

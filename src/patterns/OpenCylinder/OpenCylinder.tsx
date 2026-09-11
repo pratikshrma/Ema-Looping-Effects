@@ -11,6 +11,9 @@ import { TAU, useTime } from "../../lib/loop"
 const TURNS = 1
 const SHADER_KEY = vertShader + fragShader
 
+// seeded once so the per segment draws are stable across rebuilds
+const RANDOM_SEED = 1
+
 function intersectLines(p1: THREE.Vector2, d1: THREE.Vector2, p2: THREE.Vector2, d2: THREE.Vector2): THREE.Vector2 {
   const denom = d1.x * d2.y - d1.y * d2.x;
   const diff = new THREE.Vector2().subVectors(p2, p1);
@@ -194,22 +197,24 @@ const OpenCylinder = () => {
   }, [shape])
 
   const uniformsArray = useMemo(() => {
-    return lGeometries.map((_, i) => {
-      const seed = THREE.MathUtils.seededRandom(i)
-      return {
-        uResolution: { value: new THREE.Vector2(size.width, size.height) },
-        uSeed: { value: seed },
-        uColor1: { value: new THREE.Color() },
-        uColor2: { value: new THREE.Color() },
-        uTime: { value: 0.0 },
-        uUvOffset,
-        uFrequency: { value: 1.0 },
-        uBrightnessSeed: { value: THREE.MathUtils.seededRandom() * 2 - 1 },
-        uBrightnessRandomness: { value: 0.0 },
-        uSeemEdge: { value: 0.2 },
-      }
-    }
-    )
+    // one stream for every segment. seeding per index instead would hand back
+    // values linear in i, which reads as a ramp around the ring rather than noise
+    THREE.MathUtils.seededRandom(RANDOM_SEED)
+    const rand = () => THREE.MathUtils.seededRandom()
+
+    return lGeometries.map(() => ({
+      uResolution: { value: new THREE.Vector2(size.width, size.height) },
+      uSeed: { value: rand() },
+      uColor1: { value: new THREE.Color() },
+      uColor2: { value: new THREE.Color() },
+      uTime: { value: 0.0 },
+      uUvOffset,
+      uFrequency: { value: 1.0 },
+      // -1..1 so randomness darkens and lightens either side of the base colour
+      uBrightnessSeed: { value: rand() * 2 - 1 },
+      uBrightnessRandomness: { value: 0.0 },
+      uSeemEdge: { value: 0.2 },
+    }))
   }, [lGeometries, size.width, size.height, uUvOffset])
 
   const advance = useTime()
