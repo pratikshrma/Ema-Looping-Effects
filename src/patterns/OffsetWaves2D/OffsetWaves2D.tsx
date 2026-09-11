@@ -24,16 +24,10 @@ const toRgba = (hex: string) => {
   return { r: c.r, g: c.g, b: c.b, a: 1 }
 }
 
-type GeometryKind = 'circle' | 'square'
-const GEOMETRY_OPTIONS = { circle: 'Circle', square: 'Square' }
-
 const SHAPE_DEFAULTS = {
-  geometry: 'circle' as GeometryKind,
   totalBoxes: 32,
-  boxesGap: 1.5,
   boxHeight: 3,
   boxWidth: 1,
-  circleRadius: 1,
 }
 
 const MOTION_DEFAULTS = {
@@ -88,12 +82,9 @@ const OffsetWaves2D = () => {
     if (!sheet) return
     const obj = sheet.object('OffsetWaves2D / Props',
       {
-        geometry: t.stringLiteral(SHAPE_DEFAULTS.geometry, GEOMETRY_OPTIONS, { as: 'switch' }),
         totalBoxes: t.number(SHAPE_DEFAULTS.totalBoxes, { range: [1, 128], nudgeMultiplier: 1 }),
-        totalGap: t.number(SHAPE_DEFAULTS.boxesGap, { range: [MIN_GAP, 4], nudgeMultiplier: 0.01 }),
         boxHeight: t.number(SHAPE_DEFAULTS.boxHeight, { range: [0, 10], nudgeMultiplier: 0.01 }),
         boxWidth: t.number(SHAPE_DEFAULTS.boxWidth, { range: [0, 10], nudgeMultiplier: 0.01 }),
-        circleRadius: t.number(SHAPE_DEFAULTS.circleRadius, { range: [0.01, 10], nudgeMultiplier: 0.01 }),
         wavePhase: t.number(MOTION_DEFAULTS.wavePhase, { range: [0, 180], nudgeMultiplier: 1 }),
         waveSpeed: t.number(MOTION_DEFAULTS.waveSpeed, { range: [-30, 30], nudgeMultiplier: 0.01 }),
         waveTravel: t.number(MOTION_DEFAULTS.waveTravel, { range: [-10, 10], nudgeMultiplier: 0.01 }),
@@ -111,20 +102,14 @@ const OffsetWaves2D = () => {
         waveMax: v.waveMax,
       }
       setShape(prev =>
-        prev.geometry === v.geometry &&
-          prev.totalBoxes === v.totalBoxes &&
-          prev.boxesGap === v.totalGap &&
+        prev.totalBoxes === v.totalBoxes &&
           prev.boxHeight === v.boxHeight &&
-          prev.boxWidth === v.boxWidth &&
-          prev.circleRadius === v.circleRadius
+          prev.boxWidth === v.boxWidth
           ? prev
           : {
-            geometry: v.geometry,
             totalBoxes: v.totalBoxes,
-            boxesGap: v.totalGap,
             boxHeight: v.boxHeight,
             boxWidth: v.boxWidth,
-            circleRadius: v.circleRadius,
           })
     })
   }, [sheet])
@@ -157,13 +142,12 @@ const OffsetWaves2D = () => {
 
   const planeMeshes = useMemo(() => {
     const count = Math.max(1, Math.round(shape.totalBoxes))
-    const gap = Math.max(MIN_GAP, shape.boxesGap)
+    // boxes sit edge to edge, so the width is also the spacing
+    const gap = Math.max(MIN_GAP, shape.boxWidth)
     const span = (count - 1) * gap
 
     // one geometry, shared by every mesh; centred so scale.y grows both ways
-    const geo = shape.geometry === 'square'
-      ? new THREE.PlaneGeometry(shape.boxWidth, shape.boxHeight)
-      : new THREE.CircleGeometry(shape.circleRadius)
+    const geo = new THREE.PlaneGeometry(shape.boxWidth, shape.boxHeight)
 
     // a material each, so uSeed is actually per box
     const makeMesh = (x: number, seed: number, frequencySeed: number, brightnessSeed: number) => {

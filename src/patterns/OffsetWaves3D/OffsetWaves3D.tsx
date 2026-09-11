@@ -11,6 +11,9 @@ import vertShader from '../../Shaders/OffsetWaves3D/Plane/vert.glsl?raw'
 // gap of 0 would make the layout loop never advance
 const MIN_GAP = 0.01
 
+// slabs have to overlap, so the box width always stays at least this far above the gap
+const MIN_OVERLAP = 1.0
+
 // seeded once so the per-box offsets are stable across rebuilds
 const RANDOM_SEED = 1
 
@@ -157,7 +160,8 @@ const OffsetWaves3D = () => {
 
   const planeMeshes = useMemo(() => {
     const count = Math.max(1, Math.round(shape.totalBoxes))
-    const gap = Math.max(MIN_GAP, shape.boxesGap)
+    // boxWidth >= gap + MIN_OVERLAP, enforced by pulling the gap down rather than the width up
+    const gap = Math.max(MIN_GAP, Math.min(shape.boxesGap, shape.boxWidth - MIN_OVERLAP))
     const span = (count - 1) * gap
 
     // one geometry, shared by every mesh; centred so scale.y grows both ways
